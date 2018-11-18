@@ -12,7 +12,7 @@ if (port == null || port == "") {
     port = 8000
 }
 
-const baseUrl = `http://192.168.1.13:${port}/`;
+const baseUrl = `https://frozen-stream-46849.herokuapp.com/`;
     
 var socketCount = 0;
 
