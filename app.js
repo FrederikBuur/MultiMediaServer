@@ -34,7 +34,6 @@ app.get('/', (req, res) => {        //req = request, res = response test
     res.send("Hello world");
 });
 
-// post
 // https://www.youtube.com/watch?v=9Qzmri1WaaE
 // POST upload image
 app.post('/image/', upload.single('image'), (req, res) => {
