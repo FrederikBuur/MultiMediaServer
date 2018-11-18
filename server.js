@@ -7,7 +7,12 @@ const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs')
 
-const baseUrl = 'http://192.168.1.13:3000/';
+var port = process.env.PORT
+if (port == null || port == "") {
+    port = 8000
+}
+
+const baseUrl = `http://192.168.1.13:${port}/`;
     
 var socketCount = 0;
 
@@ -78,8 +83,8 @@ function uploadFile(type, req, res) {
     fs.unlink(tmp_path, (err) => {});
 }
 
-server.listen(3000, () => {
-    console.log("Server running...");
+server.listen(port, () => {
+    console.log(`Server running... on ${port}`);
 });
 
 const io = socketIo(server);
