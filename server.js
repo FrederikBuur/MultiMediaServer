@@ -1,6 +1,12 @@
 const express = require('express');
 const app = express();
-const server = require('http').Server(app);
+
+const httpsOptions = {
+    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'server.crt')), 
+    key: fs.readFileSync(path.join(__dirname, 'ssl', 'server.key'))
+}
+
+const server = require('http').Server(httpsOptions, app);
 const socketIo = require('socket.io');
 const multer = require('multer')
 const ejs = require('ejs');
