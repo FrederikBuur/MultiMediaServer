@@ -1,27 +1,24 @@
 const express = require('express');
 const app = express();
-
-const httpsOptions = {
-    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'server.crt')), 
-    key: fs.readFileSync(path.join(__dirname, 'ssl', 'server.key'))
-}
-
-const server = require('http').Server(httpsOptions, app);
-const socketIo = require('socket.io');
-const multer = require('multer')
-const ejs = require('ejs');
 const path = require('path');
 const fs = require('fs')
-
+const server = require('http').createServer(app);
+const socketIo = require('socket.io');
+const multer = require('multer')
+    
+var socketCount = 0;
+var messages = [];
 var port = process.env.PORT
 if (port == null || port == "") {
     port = 8000
 }
 
+server.listen(port, () => {
+    console.log(`Server running... on ${port}`);
+});
+
 //const baseUrl = `https://frozen-stream-46849.herokuapp.com/`;
 const baseUrl = `http://192.168.1.13:8000/`;
-    
-var socketCount = 0;
 
 // set storage engine
 const storage = multer.diskStorage({
@@ -67,6 +64,11 @@ app.post('/document/', upload.single('document'), (req, res) => {
     uploadFile('document', req, res);
 })
 
+// GET latest messages
+app.get('/latest-messages/', (req, res) => {
+    res.send(JSON.stringify(messages))
+})
+
 // shared upload function
 function uploadFile(type, req, res) {
     // https://stackoverflow.com/questions/30005621/how-to-upload-multiple-image-from-android-to-nodejs-server
@@ -81,7 +83,9 @@ function uploadFile(type, req, res) {
         response = {
             url: url
         }; 
-        res.send(JSON.stringify(response));
+        var resp = JSON.stringify(response)
+
+        res.send(resp);
     });
     src.on('error', (err) => { 
         console.log(`error uploading ${type}`); 
@@ -90,9 +94,12 @@ function uploadFile(type, req, res) {
     fs.unlink(tmp_path, (err) => {});
 }
 
-server.listen(port, () => {
-    console.log(`Server running... on ${port}`);
-});
+function appendMessage(msg) {
+    if(messages.length >= 10) {
+        messages.pop
+    }
+    messages.push(msg)
+}
 
 const io = socketIo(server);
 io.on('connection', (socket) => {
@@ -100,7 +107,7 @@ io.on('connection', (socket) => {
 
     // when new user joins chat
     socket.on("user_joined", (data) => {
-        console.log(`${JSON.stringify(data)} connected, ${socketCount} in chat`);
+        console.log(`${JSON.stringify(data)} joined, ${socketCount} in chat`);
         socket.broadcast.emit("user_joined", data);
         //socket.emit("user_joined", data); // also emitting to self
     })
@@ -125,6 +132,7 @@ io.on('connection', (socket) => {
 
         // broadcast message to everyone els
         socket.broadcast.emit("new_message", object);
+        appendMessage(object)
 
         // broadcast message to everyone els including sender
         //socket.emit("new_message", object);    
