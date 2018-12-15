@@ -105,17 +105,17 @@ io.on('connection', (socket) => {
 
     // when new user joins chat
     socket.on("user_joined", (data) => {
-        console.log(`${JSON.stringify(JSON.parse(data))} joined, ${socketCount} in chat`);
+        console.log(`${JSON.stringify(data)} joined, ${socketCount} in chat`);
         socket.broadcast.emit("user_joined", data);
     })
 
     socket.on("user_typing", (data) => {
-        console.log(`User is typing: ${JSON.stringify(JSON.parse(data))}`);
+        console.log(`User is typing: ${JSON.stringify(data)}`);
         socket.broadcast.emit("user_typing", data);
     })
 
     socket.on("user_stop_typing", (data) => {
-        console.log(`User stop typing: ${JSON.stringify(JSON.parse(data))}`);
+        console.log(`User stop typing: ${JSON.stringify(data)}`);
         socket.broadcast.emit("user_stop_typing", data);
     })
 
