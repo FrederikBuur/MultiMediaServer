@@ -18,7 +18,7 @@ server.listen(port, () => {
 });
 
 const baseUrl = `https://frozen-stream-46849.herokuapp.com/`;
-//const baseUrl = `http://192.168.1.13:8000/`;
+//const baseUrl = `http://192.168.1.13:8000/`; //local host
 
 // set storage engine
 const storage = multer.diskStorage({
@@ -39,11 +39,9 @@ app.use(express.static('./public/'));
 
 // get test
 app.get('/', (req, res) => {        //req = request, res = response test 
-    // see if server i running, go to localhost in browser http://localhost:3000/
     res.send("Hello world");
 });
 
-// https://www.youtube.com/watch?v=9Qzmri1WaaE
 // POST upload image
 app.post('/image/', upload.single('image'), (req, res) => {
     uploadFile('image', req, res);
@@ -66,12 +64,11 @@ app.post('/document/', upload.single('document'), (req, res) => {
 
 // GET latest messages
 app.get('/latest-messages/', (req, res) => {
-    res.send(JSON.stringify(messages))
+    res.send(JSON.parse(messages))
 })
 
 // shared upload function
 function uploadFile(type, req, res) {
-    // https://stackoverflow.com/questions/30005621/how-to-upload-multiple-image-from-android-to-nodejs-server
     var tmp_path = req.file.path;
     var target_path = `public/${type}/${req.file.originalname}`; 
     var src = fs.createReadStream(tmp_path);
@@ -94,6 +91,7 @@ function uploadFile(type, req, res) {
     fs.unlink(tmp_path, (err) => {});
 }
 
+// add message to array
 function appendMessage(msg) {
     if(messages.length >= 10) {
         messages.pop
@@ -107,21 +105,18 @@ io.on('connection', (socket) => {
 
     // when new user joins chat
     socket.on("user_joined", (data) => {
-        console.log(`${JSON.stringify(data)} joined, ${socketCount} in chat`);
+        console.log(`${JSON.stringify(JSON.parse(data))} joined, ${socketCount} in chat`);
         socket.broadcast.emit("user_joined", data);
-        //socket.emit("user_joined", data); // also emitting to self
     })
 
     socket.on("user_typing", (data) => {
-        console.log(`User is typing: ${JSON.stringify(data)}`);
+        console.log(`User is typing: ${JSON.stringify(JSON.parse(data))}`);
         socket.broadcast.emit("user_typing", data);
-        //socket.emit("user_typing", data); // also emitting to self
     })
 
     socket.on("user_stop_typing", (data) => {
-        console.log(`User stop typing: ${JSON.stringify(data)}`);
+        console.log(`User stop typing: ${JSON.stringify(JSON.parse(data))}`);
         socket.broadcast.emit("user_stop_typing", data);
-        //socket.emit("user_stop_typing", data); // also emitting to self
     })
 
     // recieve new messages
@@ -133,9 +128,6 @@ io.on('connection', (socket) => {
         // broadcast message to everyone els
         socket.broadcast.emit("new_message", object);
         appendMessage(object)
-
-        // broadcast message to everyone els including sender
-        //socket.emit("new_message", object);    
     });
 
     socket.on("disconnect", (socket => {
