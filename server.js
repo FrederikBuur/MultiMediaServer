@@ -64,7 +64,7 @@ app.post('/document/', upload.single('document'), (req, res) => {
 
 // GET latest messages
 app.get('/latest-messages/', (req, res) => {
-    res.send(JSON.parse(messages))
+    res.send(JSON.stringify(messages))
 })
 
 // shared upload function
